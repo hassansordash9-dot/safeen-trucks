@@ -1,0 +1,196 @@
+@import "tailwindcss";
+
+/* Brand constants — identical in both themes. */
+@theme {
+  --color-black: #0b0b0b;
+  --color-charcoal: #171717;
+  --color-charcoal-2: #232323;
+  --color-charcoal-3: #2f2f2f;
+
+  --color-gold: #d4af37;
+  --color-gold-dark: #a57c00;
+
+  /* Ink that must stay dark whatever the theme: on gold fills and white chips. */
+  --color-fixed-dark: #0b0b0b;
+
+  --font-sans: "Segoe UI", "Noto Sans Arabic", "Noto Kufi Arabic", system-ui, -apple-system,
+    "Helvetica Neue", Arial, sans-serif;
+
+  --radius-card: 0.5rem;
+}
+
+/*
+ * Semantic surface tokens. Everything themeable reads these, so a theme is one
+ * block of variables rather than per-component overrides.
+ * Light: warm gold page, cream panels. Dark: near-black page, charcoal panels.
+ */
+:root {
+  color-scheme: light;
+
+  --color-page: #d8b44a;
+  --color-card: #fffcf4;
+  --color-surface: #f3ecdc;
+  --color-text: #1a1a1a;
+  --color-muted: #444444;
+  --color-line: #e2d7b6;
+  --color-gold-soft: #f7efd8;
+
+  /* Neutral "primary" button: dark on light pages, light on dark pages. */
+  --color-invert-bg: #0b0b0b;
+  --color-invert-bg-hover: #232323;
+  --color-invert-fg: #ffffff;
+
+  --color-ok: #146c43;
+  --color-ok-soft: #e6f2ea;
+  --color-warn: #8a5a00;
+  --color-warn-soft: #fbf1de;
+  --color-bad: #a4262c;
+  --color-bad-soft: #fbeaea;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-page: #0b0b0b;
+  --color-card: #171717;
+  --color-surface: #1e1e1e;
+  --color-text: #ecebe6;
+  --color-muted: #a3a09a;
+  --color-line: #2e2e2e;
+  --color-gold-soft: #2a2416;
+
+  --color-invert-bg: #efece4;
+  --color-invert-bg-hover: #ffffff;
+  --color-invert-fg: #0b0b0b;
+
+  --color-ok: #5bd08c;
+  --color-ok-soft: #10281b;
+  --color-warn: #e0b252;
+  --color-warn-soft: #2a2110;
+  --color-bad: #f0837f;
+  --color-bad-soft: #2c1415;
+}
+
+/* No explicit choice yet: follow the operating system, with no script needed. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+  
+    --color-page: #0b0b0b;
+    --color-card: #171717;
+    --color-surface: #1e1e1e;
+    --color-text: #ecebe6;
+    --color-muted: #a3a09a;
+    --color-line: #2e2e2e;
+    --color-gold-soft: #2a2416;
+  
+    --color-invert-bg: #efece4;
+    --color-invert-bg-hover: #ffffff;
+    --color-invert-fg: #0b0b0b;
+  
+    --color-ok: #5bd08c;
+    --color-ok-soft: #10281b;
+    --color-warn: #e0b252;
+    --color-warn-soft: #2a2110;
+    --color-bad: #f0837f;
+    --color-bad-soft: #2c1415;
+  }
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  background: var(--color-page);
+}
+
+body {
+  background: var(--color-page);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+
+[dir="rtl"] body {
+  letter-spacing: 0;
+}
+
+/* Inputs: 16px on mobile stops iOS from zooming when a field is focused. */
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+@media (min-width: 768px) {
+  input,
+  select,
+  textarea,
+  button {
+    font-size: 0.9375rem;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+@utility field {
+  @apply w-full rounded-md border border-[var(--color-line)] bg-[var(--color-card)] px-3 py-2.5 text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-gold)] disabled:bg-[var(--color-surface)];
+}
+
+@utility label {
+  @apply mb-1.5 block text-sm font-medium text-[var(--color-text)];
+}
+
+@utility btn {
+  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60;
+}
+
+@utility btn-primary {
+  @apply bg-[var(--color-invert-bg)] text-[var(--color-invert-fg)] hover:bg-[var(--color-invert-bg-hover)];
+}
+
+@utility btn-accent {
+  @apply bg-[var(--color-gold)] text-[var(--color-fixed-dark)] hover:bg-[var(--color-gold-dark)] hover:text-white;
+}
+
+@utility btn-outline {
+  @apply border border-[var(--color-line)] bg-[var(--color-card)] text-[var(--color-text)] hover:border-[var(--color-gold)] hover:bg-[var(--color-surface)];
+}
+
+@utility btn-ghost {
+  @apply text-[var(--color-text)] hover:bg-[var(--color-surface)];
+}
+
+/* Ghost button sitting on a dark bar (header, mobile nav) in either theme. */
+@utility btn-ghost-dark {
+  @apply text-white/85 hover:bg-white/10 hover:text-[var(--color-gold)];
+}
+
+@utility card {
+  @apply rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-card)];
+}
+
+@utility container-page {
+  @apply mx-auto w-full max-w-7xl px-4 sm:px-6;
+}
+
+/* Reserve space for the mobile tab bar and sticky contact bar. */
+@utility pb-mobile-nav {
+  @apply pb-20 md:pb-0;
+}
+
+/* Thin gold rule used under dark headers and hero sections. */
+@utility gold-rule {
+  @apply border-b border-[var(--color-gold)]/30;
+}
+
+.hide-scrollbar {
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}

@@ -1,0 +1,18 @@
+# Safeen Trucks — Netlify build settings.
+# Netlify auto-detects Next.js and injects its own Next runtime, so no plugin is
+# pinned here: that keeps us on the version Netlify tests against each release.
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NEXT_TELEMETRY_DISABLED = "1"
+
+# Send the bare domain straight to the default locale; the proxy handles the rest.
+[[redirects]]
+  from = "/"
+  to = "/en"
+  status = 307
+  force = false

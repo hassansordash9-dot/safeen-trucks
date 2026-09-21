@@ -1,0 +1,31 @@
+import type { Locale } from '@/i18n/config';
+
+export const routes = {
+  home: (l: Locale) => `/${l}`,
+  trucks: (l: Locale) => `/${l}/trucks`,
+  truck: (l: Locale, slug: string) => `/${l}/trucks/${slug}`,
+  truckBrand: (l: Locale, brand: string) => `/${l}/trucks/${brand}`,
+  parts: (l: Locale) => `/${l}/truck-parts`,
+  part: (l: Locale, slug: string) => `/${l}/truck-parts/${slug}`,
+  partCategory: (l: Locale, slug: string) => `/${l}/truck-parts/${slug}`,
+  dealers: (l: Locale) => `/${l}/dealers`,
+  dealer: (l: Locale, slug: string) => `/${l}/dealers/${slug}`,
+  sell: (l: Locale) => `/${l}/sell`,
+  sellTruck: (l: Locale) => `/${l}/sell/truck`,
+  sellPart: (l: Locale) => `/${l}/sell/part`,
+  saved: (l: Locale) => `/${l}/saved`,
+  account: (l: Locale) => `/${l}/account`,
+  accountListings: (l: Locale) => `/${l}/account/listings`,
+  accountSearches: (l: Locale) => `/${l}/account/searches`,
+  accountRequests: (l: Locale) => `/${l}/account/requests`,
+  accountProfile: (l: Locale) => `/${l}/account/profile`,
+  dealerDashboard: (l: Locale) => `/${l}/account/dealer`,
+  login: (l: Locale, next?: string) =>
+    `/${l}/login${next ? `?next=${encodeURIComponent(next)}` : ''}`,
+  register: (l: Locale) => `/${l}/register`,
+  admin: (l: Locale) => `/${l}/admin`,
+  requestTruck: (l: Locale) => `/${l}/requests/truck`,
+  requestPart: (l: Locale) => `/${l}/requests/part`,
+  editTruck: (l: Locale, id: string) => `/${l}/sell/truck?id=${id}`,
+  editPart: (l: Locale, id: string) => `/${l}/sell/part?id=${id}`,
+} as const;
