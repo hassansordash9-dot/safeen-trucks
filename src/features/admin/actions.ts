@@ -3,12 +3,12 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
-import { getSessionUser } from '@/lib/auth';
+import { getSessionUser, canSell } from '@/lib/auth';
 import type { ListingKind, ListingStatus, UserStatus } from '@/types';
 
 async function adminClient() {
   const user = await getSessionUser();
-  if (user?.profile?.role !== 'admin') return null;
+  if (!user || !canSell(user.profile)) return null;
   return { supabase: await createClient(), adminId: user.id };
 }
 
