@@ -19,7 +19,7 @@ function refreshAdmin() {
 const moderationSchema = z.object({
   kind: z.enum(['truck', 'part']),
   id: z.string().uuid(),
-  status: z.enum(['published', 'rejected', 'paused', 'pending', 'expired']),
+  status: z.enum(['published', 'rejected', 'paused', 'pending', 'expired', 'sold']),
   reason: z.string().trim().max(500).optional(),
 });
 
@@ -46,6 +46,9 @@ export async function moderateListing(input: {
 
   const { error } = await context.supabase.from(table).update(patch).eq('id', parsed.data.id);
   refreshAdmin();
+  revalidatePath('/[locale]/trucks', 'layout');
+  revalidatePath('/[locale]/truck-parts', 'layout');
+  revalidatePath('/[locale]/account/listings', 'page');
   return !error;
 }
 
