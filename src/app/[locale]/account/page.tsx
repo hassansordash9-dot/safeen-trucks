@@ -3,7 +3,7 @@ import { StatTile } from '@/components/ui';
 import { getDictionary } from '@/i18n/dictionary';
 import { createTranslator } from '@/i18n/translate';
 import type { Locale } from '@/i18n/config';
-import { requireUser } from '@/lib/auth';
+import { requireUser, canSell } from '@/lib/auth';
 import { getSellerStats } from '@/features/account/queries';
 import { getDealerForOwner } from '@/features/dealers/queries';
 import { formatNumber } from '@/lib/format';
@@ -26,7 +26,7 @@ export default async function AccountPage({ params }: { params: Promise<{ locale
   ];
 
   const links = [
-    { href: routes.accountListings(locale), label: t('account.myListings') },
+    ...(canSell(user.profile) ? [{ href: routes.accountListings(locale), label: t('account.myListings') }] : []),
     { href: routes.saved(locale), label: t('account.favorites') },
     { href: routes.accountSearches(locale), label: t('account.savedSearches') },
     { href: routes.accountRequests(locale), label: t('account.myRequests') },
