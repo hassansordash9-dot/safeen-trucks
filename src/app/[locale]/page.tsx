@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getSessionUser, canSell } from '@/lib/auth';
 import { HeroSearch } from '@/components/HeroSearch';
 import { TruckCard } from '@/components/TruckCard';
 import { DealerCard } from '@/components/DealerCard';
@@ -110,9 +111,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2">
-            <Link href={routes.sell(locale)} className="btn btn-outline">
+            {canSell((await getSessionUser())?.profile ?? null) && <Link href={routes.sell(locale)} className="btn btn-outline">
               {t('home.sellTruck')}
-            </Link>
+            </Link>}
             <Link
               href={routes.requestTruck(locale)}
               className="btn text-white hover:bg-white/10"
@@ -231,7 +232,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
           </section>
         )}
 
-        <section className="card flex flex-col items-start gap-4 border-[var(--color-gold)]/30 bg-[var(--color-black)] p-6 text-white sm:flex-row sm:items-center sm:justify-between">
+        {canSell((await getSessionUser())?.profile ?? null) && <section className="card flex flex-col items-start gap-4 border-[var(--color-gold)]/30 bg-[var(--color-black)] p-6 text-white sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-xl font-bold">{t('home.sellCtaTitle')}</h2>
             <p className="mt-1 text-white/75">{t('home.sellCtaBody')}</p>
@@ -239,7 +240,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
           <Link href={routes.sell(locale)} className="btn btn-accent shrink-0">
             {t('home.sellCtaButton')}
           </Link>
-        </section>
+        </section>}
       </div>
     </>
   );

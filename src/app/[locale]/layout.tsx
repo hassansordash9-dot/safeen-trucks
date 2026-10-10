@@ -9,6 +9,7 @@ import { getDictionary } from '@/i18n/dictionary';
 import { createTranslator } from '@/i18n/translate';
 import { isLocale, localeDir, localeHtmlLang, locales, type Locale } from '@/i18n/config';
 import { SetupNotice } from '@/components/SetupNotice';
+import { getSessionUser, canSell } from '@/lib/auth';
 import { isSupabaseConfigured } from '@/lib/env';
 import { LOGO_PATH, siteUrl } from '@/lib/seo';
 import { THEME_COOKIE, isTheme } from '@/lib/theme';
@@ -86,6 +87,7 @@ export default async function LocaleLayout({
   const dict = await getDictionary(typed);
   const t = createTranslator(dict);
   const configured = isSupabaseConfigured;
+  const user = configured ? await getSessionUser() : null;
 
   // Rendered on the server, so the correct theme is in the HTML before first paint.
   const stored = (await cookies()).get(THEME_COOKIE)?.value;
@@ -109,6 +111,7 @@ export default async function LocaleLayout({
           {configured && (
             <MobileNav
               locale={typed}
+              canPost={canSell(user?.profile ?? null)}
               labels={{
                 home: t('nav.home'),
                 search: t('nav.search'),
