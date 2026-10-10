@@ -54,6 +54,7 @@ export default async function AdminListingsPage({
           {listings.map((listing) => (
             <li key={`${listing.kind}-${listing.id}`} className="card p-4">
               <div className="flex flex-wrap items-center gap-2">
+                <Link className="btn btn-outline" href={listing.kind === 'truck' ? routes.sellTruck(locale) + '?id=' + listing.id : routes.sellPart(locale) + '?id=' + listing.id}>{t('common.edit')}</Link>
                 <ListingStatusBadge
                   status={listing.status}
                   label={t(`status.${listing.status}`)}
