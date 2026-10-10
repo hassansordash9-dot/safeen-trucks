@@ -43,6 +43,8 @@ export async function moderateListing(input: {
     rejection_reason: parsed.data.status === 'rejected' ? (parsed.data.reason ?? null) : null,
   };
   if (parsed.data.status === 'published') patch.published_at = new Date().toISOString();
+  if (parsed.data.status === 'sold') patch.sold_at = new Date().toISOString();
+  if (parsed.data.status === 'published') patch.sold_at = null;
 
   const { error } = await context.supabase.from(table).update(patch).eq('id', parsed.data.id);
   refreshAdmin();
