@@ -1,10 +1,11 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { EmptyState } from '@/components/ui';
 import { ListingRow, type ListingRowData } from '@/features/account/ListingRow';
 import { getDictionary } from '@/i18n/dictionary';
 import { createTranslator } from '@/i18n/translate';
 import type { Locale } from '@/i18n/config';
-import { requireUser } from '@/lib/auth';
+import { requireUser, canSell } from '@/lib/auth';
 import { getSellerTrucks } from '@/features/trucks/queries';
 import { getSellerParts } from '@/features/parts/queries';
 import { routes } from '@/lib/routes';
@@ -18,6 +19,7 @@ export default async function MyListingsPage({
 }) {
   const [{ locale }, { saved }] = await Promise.all([params, searchParams]);
   const user = await requireUser(locale, routes.accountListings(locale));
+  if (!canSell(user.profile)) redirect(routes.account(locale));
   const t = createTranslator(await getDictionary(locale));
 
   const [trucks, parts] = await Promise.all([getSellerTrucks(user.id), getSellerParts(user.id)]);

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getSessionUser, canSell } from '@/lib/auth';
 import { Logo } from './Logo';
 import { routes } from '@/lib/routes';
 import { getDictionary } from '@/i18n/dictionary';
@@ -7,6 +8,7 @@ import type { Locale } from '@/i18n/config';
 
 export async function Footer({ locale }: { locale: Locale }) {
   const t = createTranslator(await getDictionary(locale));
+  const canPost = canSell((await getSessionUser())?.profile ?? null);
 
   const columns = [
     {
@@ -15,7 +17,7 @@ export async function Footer({ locale }: { locale: Locale }) {
         { href: routes.trucks(locale), label: t('nav.trucks') },
         { href: routes.parts(locale), label: t('nav.parts') },
         { href: routes.dealers(locale), label: t('nav.dealers') },
-        { href: routes.sell(locale), label: t('nav.sell') },
+        ...(canPost ? [{ href: routes.sell(locale), label: t('nav.sell') }] : []),
       ],
     },
     {

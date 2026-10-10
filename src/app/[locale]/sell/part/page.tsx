@@ -27,7 +27,7 @@ export default async function SellPartPage({ params, searchParams }: Props) {
   ]);
 
   const part = id ? await getPartById(id) : null;
-  if (id && (!part || part.seller_id !== user.id)) notFound();
+  if (id && !part) notFound();
 
   return (
     <div className="container-page max-w-3xl py-8">

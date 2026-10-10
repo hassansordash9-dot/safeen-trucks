@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
-import { getSessionUser } from '@/lib/auth';
+import { getSessionUser, canSell } from '@/lib/auth';
 import { scorePart } from '@/lib/quality';
 import { listingSlug } from '@/lib/utils';
 import { partInputSchema } from '@/features/trucks/schema';
@@ -15,7 +15,7 @@ export async function savePart(input: unknown): Promise<SaveResult> {
 
   const user = await getSessionUser();
   if (!user) return { ok: false, reason: 'auth' };
-  if (!user.profile || (user.profile.status !== 'active' && user.profile.status !== 'warned')) {
+  if (!canSell(user.profile)) {
     return { ok: false, reason: 'forbidden' };
   }
 
@@ -27,7 +27,6 @@ export async function savePart(input: unknown): Promise<SaveResult> {
       .from('dealers')
       .select('id')
       .eq('id', data.dealerId)
-      .eq('owner_id', user.id)
       .maybeSingle();
     if (!dealer) return { ok: false, reason: 'forbidden' };
   }
@@ -81,11 +80,11 @@ export async function savePart(input: unknown): Promise<SaveResult> {
       .maybeSingle();
     if (!existing) return { ok: false, reason: 'error' };
     const current = existing as { seller_id: string; status: ListingStatus };
-    if (current.seller_id !== user.id) return { ok: false, reason: 'forbidden' };
+
 
     const { error } = await supabase
       .from('parts')
-      .update({ ...row, status: nextStatus(current.status) })
+      .update({ ...row, seller_id: current.seller_id, status: nextStatus(current.status) })
       .eq('id', id);
     if (error) return { ok: false, reason: 'error', message: error.message };
   } else {
@@ -156,7 +155,7 @@ async function syncImages(partId: string, images: Array<{ path: string; isPrimar
 
 export async function setPartStatus(id: string, status: ListingStatus): Promise<boolean> {
   const user = await getSessionUser();
-  if (!user) return false;
+  if (!user || !canSell(user.profile)) return false;
 
   const allowed: ListingStatus[] = ['paused', 'published', 'sold', 'draft'];
   if (!allowed.includes(status)) return false;
@@ -167,7 +166,7 @@ export async function setPartStatus(id: string, status: ListingStatus): Promise<
     .select('seller_id, status')
     .eq('id', id)
     .maybeSingle();
-  if (!part || (part as { seller_id: string }).seller_id !== user.id) return false;
+  if (!part) return false;
   if (status === 'published' && (part as { status: ListingStatus }).status !== 'paused') {
     return false;
   }
@@ -181,6 +180,8 @@ export async function setPartStatus(id: string, status: ListingStatus): Promise<
 }
 
 export async function deletePart(id: string): Promise<boolean> {
+  const user = await getSessionUser();
+  if (!user || !canSell(user.profile)) return false;
   const supabase = await createClient();
   const { data: images } = await supabase.from('part_images').select('path').eq('part_id', id);
   const { data: deleted, error } = await supabase

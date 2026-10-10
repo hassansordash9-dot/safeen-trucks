@@ -15,7 +15,9 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
   const [info, setInfo] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
-  const next = params.get('next');
+  const requestedNext = params.get('next');
+  const next = requestedNext?.startsWith('/') && !requestedNext.startsWith('//') && !requestedNext.includes('\\')
+    ? requestedNext : null;
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -32,11 +34,11 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
     }
 
     setPending(true);
+    try {
     const supabase = createClient();
 
     if (mode === 'login') {
       const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-      setPending(false);
       if (signInError) {
         setError(t('auth.invalid'));
         return;
@@ -59,7 +61,6 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
         }`,
       },
     });
-    setPending(false);
 
     if (signUpError) {
       setError(signUpError.message);
@@ -71,6 +72,11 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
       return;
     }
     setInfo(t('auth.checkEmail'));
+    } catch {
+      setError(t('auth.networkError'));
+    } finally {
+      setPending(false);
+    }
   }
 
   return (

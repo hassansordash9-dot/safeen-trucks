@@ -8,7 +8,6 @@ const STATIC_PATHS = [
   '/trucks',
   '/truck-parts',
   '/dealers',
-  '/sell',
   '/about',
   '/help',
   '/contact',
