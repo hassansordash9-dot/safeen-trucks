@@ -1,5 +1,6 @@
 'use client';
 
+import { BuyButton } from './BuyButton';
 import { IconPhone, IconWhatsapp } from './icons';
 import { useI18n } from '@/i18n/I18nProvider';
 import { telUrl, whatsappUrl } from '@/lib/utils';
@@ -38,7 +39,9 @@ export function ContactButtons({
   const tel = telUrl(phone);
 
   return (
-    <div className={cn('grid grid-cols-2 gap-2', className)}>
+    <div className={className}>
+      <BuyButton title={title} />
+      <div className="mt-2 grid grid-cols-2 gap-2">
       {wa && (
         <a
           href={wa}
@@ -68,6 +71,7 @@ export function ContactButtons({
           {t('listing.call')}
         </a>
       )}
+      </div>
     </div>
   );
 }

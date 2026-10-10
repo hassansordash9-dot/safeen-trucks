@@ -1,3 +1,4 @@
+import { BuyButton } from './BuyButton';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FavoriteButton } from './FavoriteButton';
@@ -76,6 +77,7 @@ export async function TruckCard({
           </p>
           {truck.verified_listing && <VerifiedBadge label={t('listing.verified')} />}
         </div>
+        {truck.status === 'published' && <BuyButton title={truck.title} />}
       </div>
     </article>
   );

@@ -1,3 +1,4 @@
+import { BuyButton } from './BuyButton';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FavoriteButton } from './FavoriteButton';
@@ -67,6 +68,7 @@ export async function PartCard({
         <p className="mt-2 text-base font-bold text-[var(--color-text)]">
           {formatPrice(part.price, part.currency, locale)}
         </p>
+        {part.status === 'published' && <BuyButton title={part.title} />}
       </div>
     </article>
   );
