@@ -47,8 +47,8 @@ export async function generateMetadata({
     applicationName: 'Safeen Trucks',
     manifest: '/manifest.webmanifest',
     icons: {
-      icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
-      apple: [{ url: LOGO_PATH }],
+      icon: [{ url: '/safeen-icon-32.png', type: 'image/png', sizes: '32x32' }],
+      apple: [{ url: '/safeen-icon-180.png', type: 'image/png', sizes: '180x180' }],
     },
     robots: { index: true, follow: true },
     alternates: {
