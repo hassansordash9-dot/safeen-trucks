@@ -25,6 +25,7 @@ export function ContactButtons({
   whatsapp,
   className,
   size = 'default',
+  available = true,
 }: {
   kind: ListingKind;
   listingId: string;
@@ -33,6 +34,7 @@ export function ContactButtons({
   whatsapp: string | null;
   className?: string;
   size?: 'default' | 'large';
+  available?: boolean;
 }) {
   const { t } = useI18n();
   const wa = whatsappUrl(whatsapp ?? phone, t('whatsapp.message', { title }));
@@ -40,7 +42,7 @@ export function ContactButtons({
 
   return (
     <div className={className}>
-      <BuyButton title={title} />
+      {available && <BuyButton title={title} />}
       <div className="mt-2 grid grid-cols-2 gap-2">
       {wa && (
         <a

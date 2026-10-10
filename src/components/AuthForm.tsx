@@ -150,6 +150,8 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
         {pending ? t('common.loading') : mode === 'login' ? t('auth.signIn') : t('auth.signUp')}
       </button>
 
+      {mode === 'login' && <Link href={`/${locale}/forgot-password`} className="block text-center text-sm font-semibold hover:underline">{t('auth.forgotPassword')}</Link>}
+
       <p className="text-center text-sm text-[var(--color-muted)]">
         {mode === 'login' ? t('auth.noAccount') : t('auth.haveAccount')}{' '}
         <Link

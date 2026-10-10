@@ -215,6 +215,7 @@ export default async function TruckDetailPage({ params, searchParams }: Props) {
 
             <div className="mt-4 hidden lg:block">
               <ContactButtons
+                available={truck.status === 'published'}
                 kind="truck"
                 listingId={truck.id}
                 title={truck.title}
@@ -275,6 +276,7 @@ export default async function TruckDetailPage({ params, searchParams }: Props) {
 
       <div className="fixed inset-x-0 bottom-14 z-20 border-t border-[var(--color-line)] bg-[var(--color-card)] p-2 lg:hidden">
         <ContactButtons
+                available={truck.status === 'published'}
           kind="truck"
           listingId={truck.id}
           title={truck.title}

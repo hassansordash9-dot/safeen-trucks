@@ -47,6 +47,7 @@ export async function PartCard({
 
         <div className="absolute start-2 top-2 flex flex-col items-start gap-1">
           {part.featured && <Badge tone="accent">{t('listing.featured')}</Badge>}
+          {part.status === 'sold' && <Badge tone="dark">{t('status.sold')}</Badge>}
           <Badge>{t(`condition.${part.condition}`)}</Badge>
         </div>
 

@@ -45,6 +45,11 @@ export function ListingModeration({
 
   return (
     <div className="mt-2 flex flex-wrap items-center gap-2">
+      {(status === 'published' || status === 'paused') && (
+        <button type="button" disabled={pending} onClick={() => run(() => moderateListing({ kind, id, status: 'sold' }))} className={`${smallButton} btn-outline`}>
+          {t('account.markSold')}
+        </button>
+      )}
       {status !== 'published' && (
         <button
           type="button"

@@ -7,6 +7,7 @@ import { defaultLocale } from '@/i18n/config';
 export async function POST(request: NextRequest) {
   const data = await request.formData();
   const tokenHash = String(data.get('token_hash') ?? '');
+  const type = data.get('type') === 'recovery' ? 'recovery' : 'email';
   const destination = new URL(`/${defaultLocale}/login`, request.url);
   const response = NextResponse.redirect(destination);
 
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
       },
     },
   });
-  const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'email' });
+  const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
 
   if (error) {
     destination.searchParams.set('error', 'auth');
@@ -32,7 +33,8 @@ export async function POST(request: NextRequest) {
     return response;
   }
 
-  destination.searchParams.set('confirmed', '1');
+  if (type === 'recovery') destination.pathname = `/${defaultLocale}/reset-password`;
+  else destination.searchParams.set('confirmed', '1');
   response.headers.set('Location', destination.toString());
   return response;
 }
