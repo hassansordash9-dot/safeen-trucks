@@ -127,6 +127,8 @@
     "seller": "Seller",
     "memberSince": "Member since",
     "otherListings": "listings",
+    "buy": "Buy",
+    "buyContact": "Tap the number to contact us on WhatsApp.",
     "contactSeller": "Contact seller",
     "whatsapp": "WhatsApp",
     "call": "Call",
@@ -255,6 +257,7 @@
     "haveAccount": "Already have an account?",
     "checkEmail": "Check your email to confirm your account.",
     "invalid": "Email or password is incorrect.",
+    "networkError": "We couldn't reach the account service. Please try again.",
     "weakPassword": "Password must be at least 8 characters.",
     "logoutDone": "You have been logged out.",
     "continueTo": "Log in to continue"
