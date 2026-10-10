@@ -28,7 +28,7 @@ export default async function SellTruckPage({ params, searchParams }: Props) {
   ]);
 
   const truck = id ? await getTruckById(id) : null;
-  if (id && (!truck || truck.seller_id !== user.id)) notFound();
+  if (id && !truck) notFound();
 
   return (
     <div className="container-page max-w-3xl py-8">
