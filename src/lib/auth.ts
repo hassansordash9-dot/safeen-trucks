@@ -3,6 +3,8 @@ import { cache } from 'react';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import type { Profile } from '@/types';
+import { canSell } from './permissions';
+export { canSell } from './permissions';
 
 export type SessionUser = { id: string; email: string | null; profile: Profile | null };
 
@@ -34,10 +36,7 @@ export async function requireUser(locale: string, returnTo?: string): Promise<Se
 
 export async function requireAdmin(locale: string): Promise<SessionUser> {
   const user = await requireUser(locale, `/${locale}/admin`);
-  if (user.profile?.role !== 'admin') redirect(`/${locale}`);
+  if (!canSell(user.profile)) redirect(`/${locale}`);
   return user;
 }
 
-export function canSell(profile: Profile | null): boolean {
-  return !!profile && (profile.status === 'active' || profile.status === 'warned');
-}
