@@ -80,7 +80,12 @@ async function main() {
     phone: '07500000000',
   };
 
-  const { data: published, error: publishedError } = await alice.client
+  const { error: ordinaryInsertError } = await alice.client.from('trucks').insert({
+    ...base, seller_id: alice.id, slug: `rls-blocked-${Date.now()}`, status: 'draft',
+  });
+  check('admin-only posting: ordinary accounts cannot insert listings', !!ordinaryInsertError);
+
+  const { data: published, error: publishedError } = await admin
     .from('trucks')
     .insert({
       ...base,
@@ -91,7 +96,7 @@ async function main() {
     .select('id, status')
     .single();
   check(
-    'policy trucks_insert: a seller can create their own listing',
+    'service fixture: create a legacy seller listing for access checks',
     !publishedError && !!published?.id,
     publishedError ? describe(publishedError) : undefined,
   );
@@ -113,13 +118,13 @@ async function main() {
     .update({ status: 'published', published_at: new Date().toISOString() })
     .eq('id', published.id);
 
-  const { data: draft, error: draftError } = await alice.client
+  const { data: draft, error: draftError } = await admin
     .from('trucks')
     .insert({ ...base, seller_id: alice.id, slug: `rls-draft-${Date.now()}`, status: 'draft' })
     .select('id')
     .single();
   check(
-    'policy trucks_insert: a seller can create a draft',
+    'service fixture: create a private draft for read checks',
     !draftError && !!draft?.id,
     draftError ? describe(draftError) : undefined,
   );
@@ -264,6 +269,19 @@ async function main() {
     'verified was accepted as true',
   );
   if (dealerRow?.id) await admin.from('dealers').delete().eq('id', dealerRow.id);
+
+  await admin.from('profiles').update({ role: 'admin' }).eq('id', alice.id);
+  const { data: adminListing, error: adminListingError } = await alice.client.from('trucks')
+    .insert({ ...base, seller_id: alice.id, slug: `rls-admin-${Date.now()}`, status: 'draft' })
+    .select('id').single();
+  check('admin-only posting: enabled admins can create listings', !adminListingError && !!adminListing?.id);
+  const { error: adminEditError } = await alice.client.from('trucks').update({ price: 1500 }).eq('id', published.id);
+  const { data: adminEdited } = await admin.from('trucks').select('price').eq('id', published.id).single();
+  check('admin-only posting: enabled admins can edit listings', !adminEditError && Number(adminEdited?.price) === 1500);
+  await admin.from('profiles').update({ status: 'suspended' }).eq('id', alice.id);
+  const { error: suspendedError } = await alice.client.from('trucks')
+    .insert({ ...base, seller_id: alice.id, slug: `rls-suspended-${Date.now()}`, status: 'draft' });
+  check('admin-only posting: suspended admins cannot create listings', !!suspendedError);
 }
 
 let exitCode = 0;
