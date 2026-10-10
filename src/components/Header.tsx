@@ -6,7 +6,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { UserMenu } from './UserMenu';
 import { IconHeart, IconPlus, IconSearch } from './icons';
 import { routes } from '@/lib/routes';
-import { getSessionUser } from '@/lib/auth';
+import { getSessionUser, canSell } from '@/lib/auth';
 import { getDictionary } from '@/i18n/dictionary';
 import { createTranslator } from '@/i18n/translate';
 import type { Locale } from '@/i18n/config';
@@ -60,10 +60,10 @@ export async function Header({ locale }: { locale: Locale }) {
               admin: t('nav.admin'),
             }}
           />
-          <Link href={routes.sell(locale)} className="btn btn-accent hidden md:inline-flex">
+          {canSell(user?.profile ?? null) && <Link href={routes.sell(locale)} className="btn btn-accent hidden md:inline-flex">
             <IconPlus className="h-4 w-4" />
             {t('nav.sell')}
-          </Link>
+          </Link>}
         </div>
       </div>
     </header>

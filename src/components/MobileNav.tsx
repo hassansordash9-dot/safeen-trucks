@@ -9,12 +9,12 @@ import type { Locale } from '@/i18n/config';
 
 type Labels = { home: string; search: string; sell: string; saved: string; account: string };
 
-export function MobileNav({ locale, labels }: { locale: Locale; labels: Labels }) {
+export function MobileNav({ locale, labels, canPost = false }: { locale: Locale; labels: Labels; canPost?: boolean }) {
   const pathname = usePathname();
   const items = [
     { href: routes.home(locale), label: labels.home, Icon: IconHome, exact: true },
     { href: routes.trucks(locale), label: labels.search, Icon: IconSearch },
-    { href: routes.sell(locale), label: labels.sell, Icon: IconPlus, accent: true },
+    ...(canPost ? [{ href: routes.sell(locale), label: labels.sell, Icon: IconPlus, accent: true }] : []),
     { href: routes.saved(locale), label: labels.saved, Icon: IconHeart },
     { href: routes.account(locale), label: labels.account, Icon: IconUser },
   ];
@@ -24,7 +24,7 @@ export function MobileNav({ locale, labels }: { locale: Locale; labels: Labels }
       className="fixed inset-x-0 bottom-0 z-30 border-t border-[var(--color-gold)]/25 bg-[var(--color-black)] md:hidden"
       aria-label={labels.home}
     >
-      <ul className="grid grid-cols-5">
+      <ul className={canPost ? "grid grid-cols-5" : "grid grid-cols-4"}>
         {items.map(({ href, label, Icon, accent, exact }) => {
           const active = exact ? pathname === href : pathname.startsWith(href);
           return (

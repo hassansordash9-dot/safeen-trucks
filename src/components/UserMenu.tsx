@@ -67,9 +67,9 @@ export function UserMenu({
             <MenuLink href={routes.account(locale)} onClick={() => setOpen(false)}>
               {labels.account}
             </MenuLink>
-            <MenuLink href={routes.accountListings(locale)} onClick={() => setOpen(false)}>
+            {role === 'admin' && <MenuLink href={routes.accountListings(locale)} onClick={() => setOpen(false)}>
               {labels.dashboard}
-            </MenuLink>
+            </MenuLink>}
             <MenuLink href={routes.saved(locale)} onClick={() => setOpen(false)}>
               {labels.saved}
             </MenuLink>
