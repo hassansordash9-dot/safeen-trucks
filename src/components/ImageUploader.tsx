@@ -44,9 +44,9 @@ export function ImageUploader({
     }
 
     setBusy(true);
-    const supabase = createClient();
     const added: UploadedImage[] = [];
-
+    try {
+    const supabase = createClient();
     for (const original of Array.from(fileList).slice(0, room)) {
       const file = await compressImage(original);
       const problem = validateImageFile(file);
@@ -67,13 +67,17 @@ export function ImageUploader({
       added.push({ path, isPrimary: false });
     }
 
-    setBusy(false);
+    } catch {
+      setError(t('errors.uploadFailed'));
+    } finally {
+      setBusy(false);
+      if (inputRef.current) inputRef.current.value = '';
+    }
     if (!added.length) return;
 
     const next = [...images, ...added];
     if (!next.some((image) => image.isPrimary)) next[0].isPrimary = true;
     onChange(next);
-    if (inputRef.current) inputRef.current.value = '';
   }
 
   function remove(path: string) {
