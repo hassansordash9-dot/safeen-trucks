@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getSessionUser, canSell } from '@/lib/auth';
 import { scoreTruck } from '@/lib/quality';
 import { listingSlug } from '@/lib/utils';
+import { statusAfterSave } from '@/lib/listing-status';
 import { truckInputSchema } from './schema';
 import type { ListingStatus } from '@/types';
 
@@ -48,11 +49,7 @@ export async function saveTruck(input: unknown): Promise<SaveResult> {
     imageCount: data.images.length,
   });
 
-  const nextStatus = (current?: ListingStatus): ListingStatus => {
-    if (!data.publish) return 'draft';
-    // Editing something already live keeps it live; everything else waits for review.
-    return current === 'published' || current === 'sold' ? 'published' : 'pending';
-  };
+  const nextStatus = (current?: ListingStatus) => statusAfterSave(data.publish, current);
   const row = {
     seller_id: user.id,
     dealer_id: data.dealerId ?? null,
@@ -107,7 +104,7 @@ export async function saveTruck(input: unknown): Promise<SaveResult> {
     id = (inserted as { id: string }).id;
   }
 
-  await syncImages(id!, data.images);
+  if (!(await syncImages(id!, data.images))) return { ok: false, reason: 'error' };
 
   const { data: saved } = await supabase
     .from('trucks')
@@ -115,6 +112,10 @@ export async function saveTruck(input: unknown): Promise<SaveResult> {
     .eq('id', id!)
     .single();
 
+  if (!saved) return { ok: false, reason: 'error' };
+  revalidatePath('/[locale]/trucks', 'layout');
+  revalidatePath('/[locale]/truck-parts', 'layout');
+  revalidatePath('/[locale]', 'page');
   revalidatePath('/[locale]/account/listings', 'page');
   return {
     ok: true,
@@ -124,47 +125,32 @@ export async function saveTruck(input: unknown): Promise<SaveResult> {
   };
 }
 
-async function syncImages(truckId: string, images: Array<{ path: string; isPrimary: boolean }>) {
+async function syncImages(listingId: string, images: Array<{ path: string; isPrimary: boolean }>): Promise<boolean> {
   const supabase = await createClient();
-  const { data: current } = await supabase
-    .from('truck_images')
-    .select('id, path')
-    .eq('truck_id', truckId);
-
+  const { data: current, error: readError } = await supabase
+    .from('truck_images').select('id, path').eq('truck_id', listingId);
+  if (readError) return false;
   const existing = (current ?? []) as Array<{ id: string; path: string }>;
   const keepPaths = new Set(images.map((image) => image.path));
   const removed = existing.filter((image) => !keepPaths.has(image.path));
+  const { error: primaryError } = await supabase.from('truck_images')
+    .update({ is_primary: false }).eq('truck_id', listingId);
+  if (primaryError) return false;
 
-  if (removed.length) {
-    await supabase
-      .from('truck_images')
-      .delete()
-      .in(
-        'id',
-        removed.map((image) => image.id),
-      );
-    await supabase.storage.from('listings').remove(removed.map((image) => image.path));
-  }
-
-  // Clear primaries first: the partial unique index allows only one per listing.
-  await supabase.from('truck_images').update({ is_primary: false }).eq('truck_id', truckId);
-
+  // Attach replacement photos before removing any existing ones.
   for (const [index, image] of images.entries()) {
     const known = existing.find((row) => row.path === image.path);
-    if (known) {
-      await supabase
-        .from('truck_images')
-        .update({ sort_order: index, is_primary: image.isPrimary })
-        .eq('id', known.id);
-    } else {
-      await supabase.from('truck_images').insert({
-        truck_id: truckId,
-        path: image.path,
-        sort_order: index,
-        is_primary: image.isPrimary,
-      });
-    }
+    const result = known
+      ? await supabase.from('truck_images').update({ sort_order: index, is_primary: image.isPrimary }).eq('id', known.id)
+      : await supabase.from('truck_images').insert({ truck_id: listingId, path: image.path, sort_order: index, is_primary: image.isPrimary });
+    if (result.error) return false;
   }
+  if (removed.length) {
+    const { error } = await supabase.from('truck_images').delete().in('id', removed.map((image) => image.id));
+    if (error) return false;
+    await supabase.storage.from('listings').remove(removed.map((image) => image.path));
+  }
+  return true;
 }
 
 export async function setTruckStatus(id: string, status: ListingStatus): Promise<boolean> {
@@ -188,6 +174,7 @@ export async function setTruckStatus(id: string, status: ListingStatus): Promise
 
   const patch: Record<string, unknown> = { status };
   if (status === 'sold') patch.sold_at = new Date().toISOString();
+  if (status === 'published') patch.sold_at = null;
 
   const { error } = await supabase.from('trucks').update(patch).eq('id', id);
   revalidatePath('/[locale]/account/listings', 'page');
