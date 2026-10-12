@@ -1,5 +1,10 @@
 # Safeen Trucks
 
+The current admin-only publication and anonymous browsing rules are documented in
+[ADMIN-ACCESS-RELEASE.md](ADMIN-ACCESS-RELEASE.md), including migration 0006, private
+draft photos, account verification and live release checks. Those instructions
+supersede the older seller/moderation workflow described below.
+
 A marketplace for trucks, truck parts and dealer inventory in the Kurdistan Region and Iraq.
 Kurdish, Arabic and English, mobile first, with WhatsApp and phone as the primary contact channel.
 

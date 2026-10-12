@@ -22,7 +22,8 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
     .eq('id', user.id)
     .maybeSingle();
 
-  return { id: user.id, email: user.email ?? null, profile: (profile as Profile) ?? null };
+  // An unconfirmed identity cannot use administrative server actions.
+  return { id: user.id, email: user.email ?? null, profile: user.email_confirmed_at ? (profile as Profile) ?? null : null };
 });
 
 export async function requireUser(locale: string, returnTo?: string): Promise<SessionUser> {

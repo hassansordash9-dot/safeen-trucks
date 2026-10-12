@@ -13,7 +13,7 @@ export type SaveResult =
   | { ok: true; id: string; slug: string; status: ListingStatus }
   | { ok: false; reason: 'auth' | 'forbidden' | 'invalid' | 'error'; message?: string };
 
-/** Listings go to moderation on publish; drafts stay private to the seller. */
+/** Admin publication happens after photos have been saved. */
 export async function saveTruck(input: unknown): Promise<SaveResult> {
   const parsed = truckInputSchema.safeParse(input);
   if (!parsed.success) return { ok: false, reason: 'invalid', message: parsed.error.message };
@@ -77,6 +77,7 @@ export async function saveTruck(input: unknown): Promise<SaveResult> {
   };
 
   let id = data.id;
+  let finalStatus = nextStatus();
 
   if (id) {
     const { data: existing } = await supabase
@@ -86,18 +87,19 @@ export async function saveTruck(input: unknown): Promise<SaveResult> {
       .maybeSingle();
     if (!existing) return { ok: false, reason: 'error' };
     const current = existing as { seller_id: string; status: ListingStatus };
+    finalStatus = nextStatus(current.status);
 
 
     const { error } = await supabase
       .from('trucks')
-      .update({ ...row, seller_id: current.seller_id, status: nextStatus(current.status) })
+      .update({ ...row, seller_id: current.seller_id, status: data.publish ? current.status : finalStatus })
       .eq('id', id);
     if (error) return { ok: false, reason: 'error', message: error.message };
   } else {
     const slug = listingSlug([data.title, data.year]);
     const { data: inserted, error } = await supabase
       .from('trucks')
-      .insert({ ...row, slug, status: nextStatus() })
+      .insert({ ...row, slug, status: 'draft' })
       .select('id')
       .single();
     if (error || !inserted) return { ok: false, reason: 'error', message: error?.message };
@@ -105,6 +107,10 @@ export async function saveTruck(input: unknown): Promise<SaveResult> {
   }
 
   if (!(await syncImages(id!, data.images))) return { ok: false, reason: 'error' };
+
+  const { data: transitioned, error: publishError } = await supabase.from('trucks')
+    .update({ status: finalStatus }).eq('id', id!).select('id').single();
+  if (publishError || !transitioned) return { ok: false, reason: 'error', message: publishError?.message };
 
   const { data: saved } = await supabase
     .from('trucks')
@@ -168,17 +174,14 @@ export async function setTruckStatus(id: string, status: ListingStatus): Promise
     .maybeSingle();
   if (!truck) return false;
 
-  // A seller may resume or pause a live listing, but cannot self-approve a pending one.
-  const currentStatus = (truck as { status: ListingStatus }).status;
-  if (status === 'published' && currentStatus !== 'paused') return false;
 
   const patch: Record<string, unknown> = { status };
   if (status === 'sold') patch.sold_at = new Date().toISOString();
   if (status === 'published') patch.sold_at = null;
 
-  const { error } = await supabase.from('trucks').update(patch).eq('id', id);
+  const { data: updated, error } = await supabase.from('trucks').update(patch).eq('id', id).select('id').single();
   revalidatePath('/[locale]/account/listings', 'page');
-  return !error;
+  return !error && !!updated;
 }
 
 export async function deleteTruck(id: string): Promise<boolean> {

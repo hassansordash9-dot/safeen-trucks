@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
   agentRules: false,
   poweredByHeader: false,
   images: {
+    // Private images must never enter the shared image optimizer cache.
+    unoptimized: true,
     remotePatterns: [{ protocol: 'https', hostname: supabaseHost, pathname: '/storage/v1/object/public/**' }],
     formats: ['image/avif', 'image/webp'],
   },

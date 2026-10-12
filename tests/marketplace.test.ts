@@ -167,8 +167,9 @@ describe('listing validation', () => {
     assert.equal(truckInputSchema.safeParse(baseTruck).success, true);
   });
 
-  it('rejects a short title', () => {
-    assert.equal(truckInputSchema.safeParse({ ...baseTruck, title: 'FH' }).success, false);
+  it('allows short admin titles, no photos and missing descriptions', () => {
+    assert.equal(truckInputSchema.safeParse({ ...baseTruck, title: 'FH', images: [] }).success, true);
+    assert.equal(truckInputSchema.safeParse({ ...baseTruck, title: '  ' }).success, false);
   });
 
   it('rejects an impossible year', () => {

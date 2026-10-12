@@ -4,5 +4,5 @@ import type { ListingStatus } from '@/types';
 export function statusAfterSave(publish: boolean, current?: ListingStatus): ListingStatus {
   if (current === 'sold') return 'sold';
   if (!publish) return 'draft';
-  return current === 'published' ? 'published' : 'pending';
+  return 'published';
 }

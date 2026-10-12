@@ -69,6 +69,7 @@ export async function savePart(input: unknown): Promise<SaveResult> {
   };
 
   let id = data.id;
+  let finalStatus = nextStatus();
 
   if (id) {
     const { data: existing } = await supabase
@@ -78,18 +79,19 @@ export async function savePart(input: unknown): Promise<SaveResult> {
       .maybeSingle();
     if (!existing) return { ok: false, reason: 'error' };
     const current = existing as { seller_id: string; status: ListingStatus };
+    finalStatus = nextStatus(current.status);
 
 
     const { error } = await supabase
       .from('parts')
-      .update({ ...row, seller_id: current.seller_id, status: nextStatus(current.status) })
+      .update({ ...row, seller_id: current.seller_id, status: data.publish ? current.status : finalStatus })
       .eq('id', id);
     if (error) return { ok: false, reason: 'error', message: error.message };
   } else {
     const slug = listingSlug([data.title, data.partNumber]);
     const { data: inserted, error } = await supabase
       .from('parts')
-      .insert({ ...row, slug, status: nextStatus() })
+      .insert({ ...row, slug, status: 'draft' })
       .select('id')
       .single();
     if (error || !inserted) return { ok: false, reason: 'error', message: error?.message };
@@ -97,6 +99,10 @@ export async function savePart(input: unknown): Promise<SaveResult> {
   }
 
   if (!(await syncImages(id!, data.images))) return { ok: false, reason: 'error' };
+
+  const { data: transitioned, error: publishError } = await supabase.from('parts')
+    .update({ status: finalStatus }).eq('id', id!).select('id').single();
+  if (publishError || !transitioned) return { ok: false, reason: 'error', message: publishError?.message };
 
   const { data: saved } = await supabase.from('parts').select('slug, status').eq('id', id!).single();
 
@@ -155,17 +161,14 @@ export async function setPartStatus(id: string, status: ListingStatus): Promise<
     .eq('id', id)
     .maybeSingle();
   if (!part) return false;
-  if (status === 'published' && (part as { status: ListingStatus }).status !== 'paused') {
-    return false;
-  }
 
   const patch: Record<string, unknown> = { status };
   if (status === 'sold') patch.sold_at = new Date().toISOString();
   if (status === 'published') patch.sold_at = null;
 
-  const { error } = await supabase.from('parts').update(patch).eq('id', id);
+  const { data: updated, error } = await supabase.from('parts').update(patch).eq('id', id).select('id').single();
   revalidatePath('/[locale]/account/listings', 'page');
-  return !error;
+  return !error && !!updated;
 }
 
 export async function deletePart(id: string): Promise<boolean> {
