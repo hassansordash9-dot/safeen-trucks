@@ -132,7 +132,6 @@ export function TruckWizard({
       }
     }
     if (step === 1 && (form.price === '' || Number(form.price) < 0)) return t('errors.invalidInput');
-    if (step === 2 && images.length === 0) return t('sell.requiredPhotos');
     if (step === 4 && form.phone.trim().length < 7) return t('errors.invalidInput');
     return null;
   }

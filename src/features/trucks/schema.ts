@@ -18,7 +18,7 @@ export const truckInputSchema = z.object({
   brandId: z.string().uuid(),
   modelId: z.string().uuid().nullish(),
   truckTypeId: z.string().uuid().nullish(),
-  title: z.string().trim().min(6).max(120),
+  title: z.string().trim().min(1).max(120),
   year: z.coerce.number().int().min(1950).max(new Date().getFullYear() + 1),
   mileageKm: z.coerce.number().int().min(0).max(5_000_000).nullish(),
   horsepower: z.coerce.number().int().min(0).max(3000).nullish(),
@@ -45,7 +45,7 @@ export type TruckInput = z.infer<typeof truckInputSchema>;
 export const partInputSchema = z.object({
   id: z.string().uuid().optional(),
   categoryId: z.string().uuid(),
-  title: z.string().trim().min(4).max(120),
+  title: z.string().trim().min(1).max(120),
   brand: optionalText(60),
   partNumber: optionalText(60),
   oemNumber: optionalText(60),
