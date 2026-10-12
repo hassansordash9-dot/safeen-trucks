@@ -120,11 +120,10 @@ export function PartWizard({
   }
 
   function validateStep(): string | null {
-    if (step === 0 && (!form.categoryId || form.title.trim().length < 4 || !form.locationId)) {
+    if (step === 0 && (!form.categoryId || !form.title.trim() || !form.locationId)) {
       return t('errors.invalidInput');
     }
     if (step === 1 && (form.price === '' || Number(form.price) < 0)) return t('errors.invalidInput');
-    if (step === 2 && images.length === 0) return t('sell.requiredPhotos');
     if (step === 4 && form.phone.trim().length < 7) return t('errors.invalidInput');
     return null;
   }
