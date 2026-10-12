@@ -11,6 +11,7 @@
     "test": "node --test --import ./tests/register.mjs \"tests/**/*.test.ts\"",
     "seed": "node --env-file-if-exists=.env.local scripts/seed.mjs",
     "test:rls": "node --env-file-if-exists=.env.local scripts/test-rls.mjs",
+    "test:admin-access": "node --env-file-if-exists=.env.local scripts/test-admin-publication.mjs",
     "check": "npm run typecheck && npm run lint && npm test"
   },
   "dependencies": {
